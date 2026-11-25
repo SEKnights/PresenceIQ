@@ -363,21 +363,27 @@ footer{padding:28px 0;text-align:center;font-size:.86rem;color:var(--muted)}
 </section>
 </main>
 
-<footer>© 2026 PresenceIQ · Smart Energy Knights<span class="visits" id="visits" hidden> · <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> <b id="visit-count">…</b> visits</span></footer>
+<footer>© 2026 PresenceIQ · Smart Energy Knights<span class="visits" id="visits"> · <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> <b id="visit-count">…</b> visits</span></footer>
 <script>
 /* Visitor counter: GoatCounter (free, no cookies). Change GC_CODE if your GoatCounter code is different. */
 (function(){
   var GC_CODE = "presenceiq";
-  if (!/\.github\.io$/.test(location.hostname)) return; /* only count the live site */
+  var out = document.getElementById("visit-count");
+  if (!/\.github\.io$/.test(location.hostname)) { out.textContent = "0"; return; } /* only count the live site */
   var base = "https://" + GC_CODE + ".goatcounter.com";
   var s = document.createElement("script");
   s.async = true; s.src = "https://gc.zgo.at/count.js";
   s.setAttribute("data-goatcounter", base + "/count");
   document.head.appendChild(s);
-  fetch(base + "/counter/" + encodeURIComponent(location.pathname) + ".json")
-    .then(function(r){ if (!r.ok) throw 0; return r.json(); })
-    .then(function(d){ document.getElementById("visit-count").textContent = d.count; document.getElementById("visits").hidden = false; })
-    .catch(function(){});
+  var path = location.pathname.replace(/index\.html$/, "");
+  fetch(base + "/counter/" + encodeURIComponent(path) + ".json")
+    .then(function(r){
+      if (r.status === 404) return { count: "0" }; /* no visits recorded yet: GoatCounter updates every ~30 min */
+      if (!r.ok) throw new Error("GoatCounter " + r.status);
+      return r.json();
+    })
+    .then(function(d){ out.textContent = d.count; })
+    .catch(function(e){ out.textContent = "–"; console.warn("Visitor counter:", e); });
 })();
 </script>
 <script>
